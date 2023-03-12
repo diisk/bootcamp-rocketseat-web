@@ -12,22 +12,30 @@ const minimumSummaryDatesSyze = 18 * 7; // 18 weeks
 const amountOfDaysToFill = minimumSummaryDatesSyze - summaryDates.length;
 
 type Summary = {
-    id:string;
-    date:string;
-    amount:number;
-    completed:number;
+    id: string;
+    date: string;
+    amount: number;
+    completed: number;
 }
+
+
 
 export function SummaryTable() {
 
-    const [summary,setSummary] = useState<Summary[]>([]);
+    const [summary, setSummary] = useState<Summary[]>([]);
 
-    useEffect(()=>{
+    function reloadSummary(){
         api.get('summary')
-        .then(response=>{
-            setSummary(response.data);
-        });
-    },[]);
+            .then(response => {
+                setSummary(response.data);
+            });
+    }
+
+    useEffect(() => {
+        reloadSummary(); 
+    }, []);
+
+    
 
     return (
         <div className="w-full flex">
@@ -42,13 +50,13 @@ export function SummaryTable() {
             </div>
 
             <div className="grid grid-rows-7 grid-flow-col gap-3">
-                {summaryDates.map(date => {
-                    const dayInSummary = summary.find(day=>dayjs(date).isSame(day.date,'day'));
+                {summary.length > 0 && summaryDates.map(date => {
+                    const dayInSummary = summary.find(day => dayjs(date).isSame(day.date, 'day'));
                     return <HabitDay
                         key={date.toString()}
                         date={date}
-                        completedHabits={dayInSummary?.completed}
-                        maxHabits={dayInSummary?.amount}
+                        defaultCompletedHabits={dayInSummary?.completed}
+                        defaultMaxHabits={dayInSummary?.amount}
                     />
                 })}
 

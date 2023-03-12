@@ -1,18 +1,22 @@
 import * as Popover from '@radix-ui/react-popover';
 import clsx from 'clsx';
 import { ProgressBar } from './ProgressBar';
-import * as Checkbox from '@radix-ui/react-checkbox';
-import { Check } from 'phosphor-react';
 import dayjs from 'dayjs';
+import { HabitsList } from './HabitsList';
+import { useState } from 'react';
 
 interface HabitDayProps {
     date: Date
-    completedHabits?: number
-    maxHabits?: number
+    defaultCompletedHabits?: number
+    defaultMaxHabits?: number
 }
 
-export function HabitDay({ date, completedHabits = 0, maxHabits = 0 }: HabitDayProps) {
-    const percent = maxHabits > 0 ? Math.round((completedHabits / maxHabits) * 100) : 0;
+export function HabitDay({ date, defaultCompletedHabits = 0, defaultMaxHabits = 0 }: HabitDayProps) {
+    const [completed, setCompleted] = useState(defaultCompletedHabits);
+
+    const [maxHabits, setMaxHabits] = useState(defaultMaxHabits);
+
+    const percent = maxHabits > 0 ? Math.round((completed / maxHabits) * 100) : 0;
 
     const dayAndMonth = dayjs(date).format('DD/MM');
     const dayOfWeek = dayjs(date).format('dddd');
@@ -26,10 +30,15 @@ export function HabitDay({ date, completedHabits = 0, maxHabits = 0 }: HabitDayP
         return value > n1 && value < n2;
     }
 
+    function handleDayModify(completed: number, maxHabits:number) {
+        setCompleted(completed);
+        setMaxHabits(maxHabits);
+    }
+
     return (
         <Popover.Root>
             <Popover.Trigger
-                className={clsx("w-10 h-10 border-2  rounded-lg", {
+                className={clsx("w-10 h-10 border-2  rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2 focus:ring-offset-background", {
                     'bg-violet-500 border-violet-400': percent >= 80,
                     'bg-violet-600 border-violet-500': isBetween(percent, 59, 80),
                     'bg-violet-700 border-violet-500': isBetween(percent, 39, 60),
@@ -48,24 +57,8 @@ export function HabitDay({ date, completedHabits = 0, maxHabits = 0 }: HabitDayP
                     </span>
 
                     <ProgressBar progress={percent} />
-                    <div className='mt-6 flex flex-col gap-3'>
-                        <Checkbox.Root
-                            className='flex items-center gap-3 group'
-                        >
-                            <div
-                                className='h-8 w-8 rounded-lg flex items-center justify-center bg-zinc-900 border-2 border-zinc-800 group-data-[state=checked]:bg-green-500 group-data-[state=checked]:border-green-500'
-                            >
-                                <Checkbox.Indicator>
-                                    <Check size={20} className="text-white" />
-                                </Checkbox.Indicator>
-                            </div>
 
-
-                            <span className='font-semibold text-xl text-white leading-tight group-data-[state=checked]:line-through group-data-[state=checked]:text-zinc-400'>
-                                Beber 2L de água
-                            </span>
-                        </Checkbox.Root>
-                    </div>
+                    <HabitsList date={date} onDayModify={handleDayModify} />
 
                     <Popover.Arrow height={8} width={16} className="fill-zinc-900" />
                 </Popover.Content>
